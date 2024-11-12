@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematik Çalışma Kağıdı Oluşturucu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+ 
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        .controls {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        select, button {
+            padding: 0.5rem 1.2rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transform: translateY(0); /* Normalde öğe sıfır pozisyonda */
+            transition: all 0.2s ease-in-out; /* Geçiş efekti */
+        }
+
+        button {
+            background: #f72525;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px); /* Yükselme efekti */
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        #worksheet {
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            position: relative;
+            padding: 20mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .worksheet-title {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .worksheet-subtitle {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #problemGrid {
+            display: grid;
+            grid-template-columns: repeat(4, 2fr);
+            row-gap: 45px;
+            column-gap: 15px;
+            margin: 0 auto;
+            width: 170mm;
+            padding: 10mm 0;
+        }
+
+        .problem {
+            display: flex;
+            justify-content: center;
+        }
+
+        .problem-content {
+            position: relative;
+            width: 100px;
+        }
+
+        .problem-operator {
+            position: absolute;
+            left: -5px;
+            top: 30px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .problem-number {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .problem-line {
+            border-bottom: 2px solid black;
+            margin-top: 5px;
+        }
+
+        .worksheet-date {
+            position: absolute;
+            bottom: 20mm;
+            left: 20mm;
+            font-size: 12px;
+        }
+
+        @media print {
+            .controls {
+                display: none;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+            }
+
+            #worksheet {
+                box-shadow: none;
+                margin: 0;
+                padding: 20mm;
+            }
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <select id="operation">
+                <option value="toplama">Toplama</option>
+                <option value="cikarma">Çıkarma</option>
+                <option value="carpma">Çarpma</option>
+            </select>
+            <select id="difficulty">
+                <option value="kolay">Kolay</option>
+                <option value="orta">Orta</option>
+                <option value="zor">Zor</option>
+            </select>
+            <button onclick="generateProblems()">Oluştur</button>
+            <button onclick="generatePDF()">PDF İndir</button>
+        </div>
+
+        <div id="worksheet">
+            <div class="worksheet-title">MATEMATİK ÇALIŞMA KAĞIDI</div>
+            <div class="worksheet-subtitle"></div>
+            <div id="problemGrid"></div>
+            <div class="worksheet-date"></div>
+        </div>
+    </div>
+
+    <script>
+        function generateRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateProblem() {
+            const operation = document.getElementById('operation').value;
+            const difficulty = document.getElementById('difficulty').value;
+            let num1, num2, operator;
+
+            switch(operation) {
+                case 'toplama':
+                    operator = '+';
+                    if (difficulty === 'kolay') {
+                        num1 = generateRandomNumber(10, 99);
+                        num2 = generateRandomNumber(5, 10);
+                    } else if (difficulty === 'orta') {
+                        num1 = generateRandomNumber(10, 99);
+                        num2 = generateRandomNumber(10, 99);
+                    } else {
+                        num1 = generateRandomNumber(100, 200);
+                        num2 = generateRandomNumber(10, 99);
+                    }
+                    break;
+
+                case 'cikarma':
+                    operator = '-';
+                    if (difficulty === 'kolay') {
+                        num2 = generateRandomNumber(5, 10);
+                        num1 = generateRandomNumber(num2 + 1, num2 + 20);
+                    } else if (difficulty === 'orta') {
+                        num2 = generateRandomNumber(10, 50);
+                        num1 = generateRandomNumber(num2 + 1, num2 + 50);
+                    } else {
+                        num2 = generateRandomNumber(10, 99);
+                        num1 = generateRandomNumber(num2 + 1, 200);
+                    }
+                    break;
+
+                case 'carpma':
+                    operator = '×';
+                    if (difficulty === 'kolay') {
+                        num1 = generateRandomNumber(2, 9);
+                        num2 = generateRandomNumber(2, 9);
+                    } else if (difficulty === 'orta') {
+                        num1 = generateRandomNumber(10, 30);
+                        num2 = generateRandomNumber(2, 9);
+                    } else {
+                        num1 = generateRandomNumber(10, 50);
+                        num2 = generateRandomNumber(10, 20);
+                    }
+                    break;
+            }
+
+            return { num1, num2, operator };
+        }
+
+        function updateSubtitle() {
+            const operation = document.getElementById('operation').value;
+            const difficulty = document.getElementById('difficulty').value;
+            
+            const opNames = {
+                'toplama': 'TOPLAMA İŞLEMİ',
+                'cikarma': 'ÇIKARMA İŞLEMİ',
+                'carpma': 'ÇARPMA İŞLEMİ'
+            };
+            const diffNames = {
+                'kolay': 'KOLAY SEVİYE',
+                'orta': 'ORTA SEVİYE',
+                'zor': 'ZOR SEVİYE'
+            };
+
+            const subtitle = document.querySelector('.worksheet-subtitle');
+            subtitle.textContent = `${opNames[operation]} - ${diffNames[difficulty]}`;
+        }
+
+        function updateDate() {
+            const dateElement = document.querySelector('.worksheet-date');
+            dateElement.textContent = new Date().toLocaleDateString('tr-TR');
+        }
+
+        function generateProblems() {
+            const problemGrid = document.getElementById('problemGrid');
+            problemGrid.innerHTML = '';
+            
+            updateSubtitle();
+            updateDate();
+            
+            for (let i = 0; i < 32; i++) {
+                const { num1, num2, operator } = generateProblem();
+                const problem = document.createElement('div');
+                problem.className = 'problem';
+                problem.innerHTML = `
+                    <div class="problem-content">
+                        <span class="problem-operator">${operator}</span>
+                        <div class="problem-number">${num1}</div>
+                        <div class="problem-number">${num2}</div>
+                        <div class="problem-line"></div>
+                    </div>
+                `;
+                problemGrid.appendChild(problem);
+            }
+        }
+
+        async function generatePDF() {
+            const element = document.getElementById('worksheet');
+            const operation = document.getElementById('operation').value;
+            const difficulty = document.getElementById('difficulty').value;
+
+            const opt = {
+                margin: 0,
+                filename: `matematik-calisma-${operation}-${difficulty}.pdf`,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { 
+                    scale: 4,
+                    useCORS: true,
+                    letterRendering: true,
+                    width: 795,
+                    height: 1123
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait'
+                }
+            };
+
+            try {
+                await html2pdf().set(opt).from(element).save();
+            } catch (error) {
+                console.error('PDF oluşturma hatası:', error);
+                alert('PDF oluşturulurken bir hata oluştu.');
+            }
+        }
+
+        // Sayfa yüklendiğinde ilk problemleri oluştur
+        document.addEventListener('DOMContentLoaded', generateProblems);
+
+        // Select değişikliklerini dinle
+        document.getElementById('operation').addEventListener('change', generateProblems);
+        document.getElementById('difficulty').addEventListener('change', generateProblems);
+    </script>
+</body>
+</html>
